@@ -87,7 +87,7 @@ img_list.append(img)
 img = pygame.image.load('Tileset/wave.png').convert_alpha()
 img = pygame.transform.scale(img, (int(TILE_SIZE*2.5), int(TILE_SIZE)))
 img_list.append(img)
-img = pygame.image.load('Tileset/waterfall.png').convert_alpha()
+img = pygame.image.load('Tileset/Waterfall.png').convert_alpha()
 img = pygame.transform.scale(img, (TILE_SIZE, int(TILE_SIZE*2)))
 img_list.append(img)
 # new added inversed door img
@@ -98,6 +98,7 @@ img_list.append(img)
 save_img = pygame.image.load('save_btn.png').convert_alpha()
 load_img = pygame.image.load('load_btn.png').convert_alpha()
 
+print(len(img_list))
 
 # create a list for storing data (empty)
 world_data = []

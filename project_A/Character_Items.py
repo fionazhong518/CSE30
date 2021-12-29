@@ -1,5 +1,5 @@
 """
-Name: Fighter Flight
+Name: 
 author: Fiona Zhong
 date created: 2021-10-13
 """
@@ -9,10 +9,9 @@ date created: 2021-10-13
 3. create enemy(computer) class that can shoot automatically (maybe some AI thing?)
 4. 
 '''
-import pygame, random, os, csv, time
+import pygame, random, os, csv, time, button
 
 from pygame.constants import APPACTIVE, DROPCOMPLETE, K_SPACE, KEYDOWN, KEYUP, K_w
-
 
 #from background_levels import ROWS, TILE_SIZE
 # Colors
@@ -40,7 +39,7 @@ TILE_SIZE = 32#screen_height // ROWS
 TILE_TYPES = 28
 screen_scroll = 0
 bg_scroll = 0
-level = 2
+level = 3
 start_game = False
 
 # -- player
@@ -48,6 +47,7 @@ player_move_left = False
 player_move_right = False
 shoot = False
 player_shooting = False
+lever_turn = False
 
 # ------------------------- LOAD IMAGES ---------------------------- #
 # background img
@@ -57,10 +57,14 @@ bg_2 = pygame.image.load('background/bg_1.png').convert_alpha()
 bg_2 = pygame.transform.scale(bg_2, (int(bg_2.get_width()*4), int(bg_2.get_height()*4)))
 bg_3 = pygame.image.load('background/bg_2.png').convert_alpha()
 bg_3 = pygame.transform.scale(bg_3, (int(bg_3.get_width()*4), int(bg_3.get_height()*4)))
-'''
+
 # button img
-start_img = pygame.image.load('')
-'''
+start_img = pygame.image.load('start_btn.png').convert_alpha()
+quit_img = pygame.image.load('quit_btn.png').convert_alpha()
+again_img = pygame.image.load('again_btn.png').convert_alpha()
+gameover_img = pygame.image.load('gameover_sign.png').convert_alpha()
+gameover_img = pygame.transform.scale(gameover_img, (gameover_img.get_width()*10, gameover_img.get_height()*10))
+
 img_list = [] # store tiles in a list
 box_img = []
 strike_img = []
@@ -92,25 +96,29 @@ img = pygame.image.load('Tileset/exit.png').convert_alpha()
 img = pygame.transform.scale(img, (int(TILE_SIZE*2), int(TILE_SIZE*2)))
 img_list.append(img)
 
-
 # water img
 img = pygame.image.load('Tileset/river.png').convert_alpha()
-img = pygame.transform.scale(img, (int(TILE_SIZE*2), int(TILE_SIZE)))
+img = pygame.transform.scale(img, (int(TILE_SIZE*1.5), int(TILE_SIZE)))
 img_list.append(img)
 img = pygame.image.load('Tileset/wave.png').convert_alpha()
 img = pygame.transform.scale(img, (int(TILE_SIZE*2.5), int(TILE_SIZE)))
 img_list.append(img)
-img = pygame.image.load('Tileset/waterfall.png').convert_alpha()
+img = pygame.image.load('Tileset/Waterfall.png').convert_alpha()
 img = pygame.transform.scale(img, (TILE_SIZE, int(TILE_SIZE*2)))
 img_list.append(img)
-'''
 
-'''
+# new added inversed door img
+img = pygame.image.load('Tileset/door_inversed.png').convert_alpha()
+img = pygame.transform.scale(img, (TILE_SIZE, int(TILE_SIZE*3)))
+img_list.append(img)
+
+print(len(img_list))
 # -- bullet
 bullet_img = pygame.image.load('Bullet.png').convert_alpha()
 bullet_img = pygame.transform.scale(bullet_img, (int(bullet_img.get_width()*1.2), int(bullet_img.get_height() * 1.2)))
 
-# -- items and water image
+# --------- Load images into different classes -------- #
+# -- items and water image (animation)
 ## Red flask
 red_flask_img = []
 for i in range(4):
@@ -142,27 +150,6 @@ bottle_img = []
 img = pygame.image.load("Items/bottle.png")
 img = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE))
 bottle_img.append(img)
-## sign
-sign_img =[]
-img = pygame.image.load("Items/sign.png")
-img = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE))
-bottle_img.append(img)
-## water img
-river_img = []
-for i in range(3):
-    img = pygame.image.load(f'Tileset/river/{1}.png').convert_alpha()
-    img = pygame.transform.scale(img, (int(TILE_SIZE*2), int(TILE_SIZE)))
-    river_img.append(img)
-wave_img = []
-for i in range(3):
-    img = pygame.image.load(f'Tileset/wave/{i}.png').convert_alpha()
-    img = pygame.transform.scale(img, (int(TILE_SIZE*2.5), int(TILE_SIZE)))
-    wave_img.append(img)
-waterfall_img = []
-for i in range(3):
-    img = pygame.image.load(f'Tileset/waterfall/{i}.png').convert_alpha()
-    img = pygame.transform.scale(img, (TILE_SIZE, int(TILE_SIZE*2)))
-    waterfall_img.append(img)
 mushroom_img = []
 for i in range(6):
     img = pygame.image.load(f'Mushroom/{i}.png').convert_alpha()
@@ -172,22 +159,40 @@ woodstep_img = []
 img = pygame.image.load('Tileset/decorations/7.png').convert_alpha()
 img = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE))
 woodstep_img.append(img)
-items_water = {
+items_dict = {
     'Red_flask' : red_flask_img,
     'Chest' : chest_img,
     'Coin' : coin_img,
     'Key' : key_img,
     'Bottle' : bottle_img,
-    'Sign' : sign_img,
     'Box' : box_img,
-    'River' : river_img,
-    'Wave' : wave_img,
-    'Waterfall' : waterfall_img,
     'Mushroom' : mushroom_img,
     'Strike' : strike_img,
     'Wood' : woodstep_img
 }
+## water img
+river_img = []
+for i in range(3):
+    img = pygame.image.load(f'Tileset/rivers/{i}.png').convert_alpha()
+    img = pygame.transform.scale(img, (int(TILE_SIZE*2), int(TILE_SIZE)))
+    river_img.append(img)
+wave_img = []
+for i in range(3):
+    img = pygame.image.load(f'Tileset/wave/{i}.png').convert_alpha()
+    img = pygame.transform.scale(img, (int(TILE_SIZE*2), int(TILE_SIZE)))
+    wave_img.append(img)
 
+waterfall_img = []
+for i in range(3):
+    img = pygame.image.load(f'Tileset/waterfall/{i}.png').convert_alpha()
+    img = pygame.transform.scale(img, (TILE_SIZE, int(TILE_SIZE*2)))
+    waterfall_img.append(img)
+
+water_dict = {
+    'River' : river_img,
+    'Wave' : wave_img,
+    'Waterfall' : waterfall_img
+}
 ## Heart
 heart_img = pygame.image.load('Items/Heart.png')
 heart_img = pygame.transform.scale(heart_img, (int(heart_img.get_width()*0.9), int(heart_img.get_height() * 0.9)))
@@ -227,6 +232,27 @@ def draw_bg():
         screen.blit(bg_1, ((x * width) - bg_scroll * 0.5, 0))
         screen.blit(bg_2, ((x * width) - bg_scroll * 0.6, screen_height - bg_2.get_height()+100))
         screen.blit(bg_3, ((x * width) - bg_scroll * 0.6, screen_height - bg_3.get_height()+100))
+# function to reset level
+def reset_level():
+    enemy_list.empty()
+    bullet_list.empty()
+    item_list.empty()
+    decoration_list.empty()
+    exit_list.empty()
+    door_list.empty()
+    woodstep_list.empty()
+    box_list.empty()
+    water_list.empty()
+    button_list.empty()
+    lever_list.empty()
+    mushroom_list.empty()
+
+    # create empty tile list
+    data = []
+    for row in range(ROWS):
+        r = [-1] * COLS
+        data.append(r)
+    return data
 # ---------------------------------- CLASSES ---------------------------------- #
 class World():
     def __init__(self):
@@ -243,6 +269,7 @@ class World():
                     img_rect.x = x * TILE_SIZE
                     img_rect.y = y * TILE_SIZE
                     tile_data = (img, img_rect)
+                    #print(len(img_list))
                     # sort different blocks to let them hace different functions
                     if tile >= 0 and tile <= 11:
                         self.obstacle_list.append(tile_data)
@@ -252,35 +279,34 @@ class World():
                         decoration_list.add(decoration)
 
                     elif tile >= 14 and tile <= 15:# strikes
-                        strike = Item_Water('Strike', x * TILE_SIZE, y * TILE_SIZE)
-                        #item_list.add(strike)
+                        strike = Items('Strike', x * TILE_SIZE, y * TILE_SIZE)
                         strike_list.add(strike)
                     elif tile == 16:# push box
-                        box = Item_Water('Box', x * TILE_SIZE, y * TILE_SIZE)
-                        item_list.add(box)
+                        box = Items('Box', x * TILE_SIZE, y * TILE_SIZE)
+                        box_list.add(box)
 
                     elif tile == 17: # coin, 
-                        coin = Item_Water('Coin', x * TILE_SIZE, y * TILE_SIZE)
+                        coin = Items('Coin', x * TILE_SIZE, y * TILE_SIZE)
                         item_list.add(coin)                      
                     elif tile == 18: # flask, 
-                        red_flask = Item_Water('Red_flask', x * TILE_SIZE, y * TILE_SIZE)
+                        red_flask = Items('Red_flask', x * TILE_SIZE, y * TILE_SIZE)
                         item_list.add(red_flask)
                     elif tile == 19: # treasure box, 
-                        chest = Item_Water('Chest', x * TILE_SIZE, y * TILE_SIZE)
+                        chest = Items('Chest', x * TILE_SIZE, y * TILE_SIZE)
                         item_list.add(chest)
                     elif tile == 20: # bottle, 
-                        bottle = Item_Water('Bottle', x * TILE_SIZE, y * TILE_SIZE)
+                        bottle = Items('Bottle', x * TILE_SIZE, y * TILE_SIZE)
                         item_list.add(bottle)
                     elif tile == 21: # sign, 
-                        sign = Item_Water('Sign', x * TILE_SIZE, y * TILE_SIZE)
-                        item_list.add(sign)
+                        sign = Decoration(img, x * TILE_SIZE, y * TILE_SIZE)
+                        decoration_list.add(sign)
                     elif tile == 22: # key
-                        key = Item_Water('Key', x * TILE_SIZE, y * TILE_SIZE)
+                        key = Items('Key', x * TILE_SIZE, y * TILE_SIZE)
                         item_list.add(key)
 
                     elif tile == 23:# lever
                         lever = Trigger('Lever', x * TILE_SIZE, y * TILE_SIZE)
-                        trigger_list.add(lever) 
+                        lever_list.add(lever) 
                     elif tile == 24:# player                       
                         player = Figure('player', x * TILE_SIZE, y * TILE_SIZE, 2, 5, 50)
                         #all_sprite_list.add(player)
@@ -289,26 +315,26 @@ class World():
                         trunk = Figure('Trunk', x * TILE_SIZE, y * TILE_SIZE, 1, 2, 50)
                         enemy_list.add(trunk)
                     elif tile == 26:
-                        mushroom = Item_Water('Mushroom', x * TILE_SIZE, y * TILE_SIZE)
-                        item_list.add(mushroom)
+                        mushroom = Items('Mushroom', x * TILE_SIZE, y * TILE_SIZE)
+                        mushroom_list.add(mushroom)
                     elif tile == 27:
-                        goblin = Figure('Goblin', x * TILE_SIZE, y * TILE_SIZE, 2, 2, 50)
+                        goblin = Figure('Goblin', x * TILE_SIZE, y * TILE_SIZE, 2, 2, 70)
                         enemy_list.add(goblin)
                         
-
                     elif tile >= 28 and tile <= 29:# decoration grass
                         grass = Decoration(img, x * TILE_SIZE, y * TILE_SIZE)
                         decoration_list.add(grass) 
-                    elif tile >= 30 and tile <= 31:
-                        pass # bloom and not-bloom flower
+                    elif tile >= 30 and tile <= 31:# bloom and not-bloom flower
+                        flower = Decoration(img, x * TILE_SIZE, y * TILE_SIZE)
+                        decoration_list.add(flower)
                     elif tile == 32:# root
                         root = Decoration(img, x * TILE_SIZE, y * TILE_SIZE)
                         decoration_list.add(root) 
                     elif tile == 33:# button
                         button = Trigger('Button', x * TILE_SIZE, y * TILE_SIZE)
-                        trigger_list.add(button) 
-                    elif tile >= 34 and tile <= 36: # woodstep
-                        woodstep = Item_Water('Wood', x * TILE_SIZE, y * TILE_SIZE)
+                        button_list.add(button) 
+                    elif tile == 35: # woodstep
+                        woodstep = Items('Wood', x * TILE_SIZE, y * TILE_SIZE)
                         item_list.add(woodstep)
                     elif tile == 37:# worm
                         worm = Figure('worm', x * TILE_SIZE, y * TILE_SIZE, 2, 0.1, 30)
@@ -322,18 +348,20 @@ class World():
                     elif tile == 40: # door
                         door = Door('Door', x * TILE_SIZE, y * TILE_SIZE)
                         door_list.add(door) 
-                    elif tile >= 41 and tile <= 43:# river, wave and waterfall
-                        river = Item_Water('River', x * TILE_SIZE, y * TILE_SIZE)
-                        item_list.add(river)
-                        wave = Item_Water('Wave', x * TILE_SIZE, y * TILE_SIZE)
-                        item_list.add(wave)
-                        waterfall = Item_Water('Waterfall', x * TILE_SIZE, y * TILE_SIZE)
-                        item_list.add(waterfall)
-                    elif tile == 44: # new inversed door img
-                        door_inv = Door('Door_Inversed', x * TILE_SIZE, y * TILE_SIZE)
-                        door_list.add(door_inv)
+                    elif tile == 41:# river, wave and waterfall
+                        river = Water('River', x * TILE_SIZE, y * TILE_SIZE)
+                        water_list.add(river)
+                    elif tile == 42:
+                        wave = Water('Wave', x * TILE_SIZE, y * TILE_SIZE)
+                        water_list.add(wave)
+                    elif tile == 43:
+                        waterfall = Water('Waterfall', x * TILE_SIZE, y * TILE_SIZE)
+                        water_list.add(waterfall)
+                    elif tile == 44:
+                        pass
+                    
 
-        return player, button, lever, box, exit, mushroom
+        return player, button, lever, box, exit, woodstep, strike
     def draw(self):
         for tile in self.obstacle_list:
             tile[1][0] += screen_scroll # x coordinate add in screen_scroll to move the world map
@@ -354,14 +382,15 @@ class Trigger(pygame.sprite.Sprite):
 
         self.press_down = False
         self.turning = False
-
+        self.player_collide = False
+        
     def update(self):
         self.rect.x += screen_scroll
         # functionality
         if self.type == 'Button':
             self.press()
             if player.rect.collidepoint(self.rect.midtop):
-                player.rect.y = self.rect.y - (self.rect.height//2)
+                player.rect.y = self.rect.y - player.height
                 player.rect.x = player.rect.x
                 if player.velocity_y >= 0:
                     player.velocity_y = 0
@@ -375,10 +404,12 @@ class Trigger(pygame.sprite.Sprite):
                 self.update_action(0)
 
         if self.type == 'Lever':
+            #self.turn()
             if self.turning:
                 self.update_action(1)
             else:
                 self.update_action(0)
+        #print(self.turning)
 
     def turn(self):      
         if pygame.sprite.collide_rect(self, player) or pygame.sprite.collide_rect(self, enemy):
@@ -386,9 +417,11 @@ class Trigger(pygame.sprite.Sprite):
                 self.turning = True
             else:
                 self.turning = False
+        
 
     def press(self):
-        if pygame.sprite.collide_rect(self, player) or pygame.sprite.collide_rect(self, enemy) or pygame.sprite.collide_rect(self, box):
+        if pygame.sprite.collide_rect(self, player) or pygame.sprite.collide_rect(self, enemy) \
+            or pygame.sprite.collide_rect(self, box):
             self.press_down = True
         else:
             if self.press_down:
@@ -405,7 +438,10 @@ class Trigger(pygame.sprite.Sprite):
         # check if the new action is different to the previous one
         if new_action != self.action:
             self.action = new_action
-            
+
+    def draw(self):
+        screen.blit(self.image, (self.rect.x, self.rect.y))
+
 class Decoration(pygame.sprite.Sprite):
     def __init__(self, img, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -417,22 +453,36 @@ class Decoration(pygame.sprite.Sprite):
         self.rect.x += screen_scroll # scroll the world map
 
 class Water(pygame.sprite.Sprite):
-    def __init__(self, img, x, y):
+    def __init__(self, item_type, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.image = img
+        self.type = item_type
+        self.ani_index = 0
+        self.update_time = pygame.time.get_ticks()
+        self.image = water_dict[item_type][self.ani_index]
+
         self.rect = self.image.get_rect()
-        self.rect.midtop = (x + TILE_SIZE // 2, y + TILE_SIZE - (self.image.get_height()))
+        self.rect.midtop = (x + TILE_SIZE, y + TILE_SIZE - (self.image.get_height()))
+        if self.type == 'Waterfall':
+            self.rect.midtop = (x + TILE_SIZE-15, y + TILE_SIZE - (self.image.get_height()//2))
+
     def update(self):
         self.rect.x += screen_scroll # scroll the world map
         # funtionality
         self.update_animation()
+        if pygame.sprite.collide_rect(self, player):
+            if self.type == 'River':
+                player.health = 0
+            elif self.type == 'Wave':
+                pass
+            elif self.type == 'Waterfall':
+                pass
 
     def update_animation(self):
             animation_cooldown = 150 # speed of frame changes, the higher # the slower
 
             # update image depending on current frame
             
-            self.image = items_water[self.type][self.ani_index]
+            self.image = water_dict[self.type][self.ani_index]
             
             # check if enough time has passed since the last update
             #               new time - last updated time > specific cooldown period
@@ -441,8 +491,11 @@ class Water(pygame.sprite.Sprite):
                 self.ani_index = self.ani_index + 1 # pop to the next img
 
             # aviod animation list run out of the range (back to the start)
-            if self.ani_index >= len(items_water[self.type]):
+            if self.ani_index >= len(water_dict[self.type]):
                 self.ani_index = 0
+            
+    def draw(self):
+        screen.blit(self.image, (self.rect.x, self.rect.y))
 
 class Exit(pygame.sprite.Sprite):
     def __init__(self, img, x, y):
@@ -498,12 +551,12 @@ class Door(pygame.sprite.Sprite):
 
     def update(self):
         self.update_animation()
+        #self.collision()
         self.rect.x += screen_scroll
         # open
         if self.img_type == 'Door':
             self.open = button.press_down
-        else:
-            self.open = lever.turning
+
         if self.open:
             self.update_action(1) # opening
             self.open = False
@@ -514,8 +567,20 @@ class Door(pygame.sprite.Sprite):
                 self.idle = True
         if self.idle:
             self.update_action(0)
+            if pygame.sprite.collide_rect(self, player):
+                if self.rect.collidepoint(player.rect.midright):
+                    player.rect.x = self.rect.x - player.width
+                if self.rect.collidepoint(player.rect.midleft):
+                    player.rect.x = self.rect.x + player.width
         
-     
+    def collision(self):
+        if self.update_action(0):
+            if pygame.sprite.collide_rect(self, player):
+                if self.rect.collidepoint(player.rect.midright):
+                    player.rect.x = self.rect.x - player.width
+                if self.rect.collidepoint(player.rect.midleft):
+                    player.rect.x = self.rect.x + player.width
+
     def update_animation(self):
         animation_cooldown = 150 # speed of frame changes, the higher # the slower
 
@@ -555,7 +620,7 @@ class Figure(pygame.sprite.Sprite):
         self.ani_index = 0
         self.update_time = pygame.time.get_ticks()
 
-    ## --- Load animation images of different actions --- #
+        ## --- Load animation images of different actions --- #
         # NEW WAY OF LOADING IMAGES
         animation_type = ['Idle', 'Run', 'Jump', 'Attack', 'Hit','Dead']
         for animation in animation_type:
@@ -642,7 +707,7 @@ class Figure(pygame.sprite.Sprite):
             if tile[1].colliderect(self.rect.x + dir_x, self.rect.y, self.width, self.height):
                 dir_x = 0
                 # if the ai has hit the wall, make it turn around
-                if self.char_type == 'worm'or self.char_type == 'Trunk':
+                if self.char_type == 'worm'or self.char_type == 'Trunk' or self.char_type == 'Goblin':
                     self.direction *= -1
                     self.move_counter = 0 # restart counting units moved
             # check collision in vertical direction (up and down)
@@ -656,7 +721,11 @@ class Figure(pygame.sprite.Sprite):
                     self.velocity_y = 0
                     dir_y = tile[1].top - self.rect.bottom
                     self.inair = False
-
+        
+        # check if fallen off the map
+        if self.rect.bottom > screen_height:
+            self.health = 0
+            
         # check if off screen
         if self.char_type == 'player':
             if self.rect.left + dir_x < 0 or self.rect.right + dir_x > screen_width:
@@ -673,6 +742,7 @@ class Figure(pygame.sprite.Sprite):
                      # scroll right when player moves left AND check if dir not less than 0
                 self.rect.x -= dir_x #infact the screen is gonna shift to left but player is not moving
                 screen_scroll = -dir_x # screen scroll at opposite direction
+            #print(self.rect.x, self.rect.y)
             
 
         return screen_scroll # need to return back to the main game
@@ -735,8 +805,9 @@ class Figure(pygame.sprite.Sprite):
                 self.attack_cooldown -= 1   
                 
     def ai(self):
+        randomnum = int(random.randint(1, 200))
         if self.alive and player.alive:
-            if self.idling == False and random.randint(1, 200) == 1: # let the enemy move randomly by picking a random #
+            if self.idling == False and randomnum == 1: # let the enemy move randomly by picking a random #
                 self.update_action(0) # Idle
                 self.idling = True
             # check if the player goes into enemy's vision range
@@ -744,19 +815,18 @@ class Figure(pygame.sprite.Sprite):
                 if self.char_type == 'Trunk':
                     self.update_action(3) #attack
                     self.shoot_bullet()
-                '''
-                if self.char_type == 'worm':
-                    if self.rect.colliderect(player.rect):
-                        player.health -= 1
-                '''
-                if self.char_type == 'Bigguy' or self.char_type == 'worm':
+                if self.char_type == 'Goblin' or self.char_type == 'worm':
                     self.Movement(self.ai_moving_left, self.ai_moving_right)
-
+                    self.speed = 2
                     if self.rect.colliderect(player.rect):
                         self.speed = 0
                         self.attack()
                     else:
-                        self.speed = 2
+                        self.Movement(self.ai_moving_left, self.ai_moving_right)
+                        self.update_action(1) # run
+                        randomnum = int(random.randint(1, 200)) 
+                        self.idling = False
+                        #self.update_action(1)
             else:
                 self.speed = 1
                 self.idling = False
@@ -780,6 +850,10 @@ class Figure(pygame.sprite.Sprite):
                         self.move_counter *= -1
                 else:
                     self.idling = True
+            
+            if pygame.sprite.collide_rect(self, lever):
+                lever.turning = True
+            
         # scroll
         self.rect.x += screen_scroll # enemy scrolls as the world map scroll  
     def check_alive(self):
@@ -833,28 +907,38 @@ class Strikes(pygame.sprite.Sprite):
         super().__init__()
 
 
-class Item_Water(pygame.sprite.Sprite):
+class Items(pygame.sprite.Sprite):
     def __init__(self, item_type, x, y):
         super().__init__()  
         self.type = item_type
         self.action = 0 # for chest only
         self.ani_index = 0
         self.update_time = pygame.time.get_ticks()
-        self.image = items_water[item_type][self.ani_index]
+        self.image = items_dict[item_type][self.ani_index]
 
         self.rect = self.image.get_rect()
         self.rect.midtop = (x + TILE_SIZE // 2, y + TILE_SIZE - self.image.get_height())
 
         self.width = self.image.get_width()
         self.height = self.image.get_height()
-        self.velocity_y = 0
+        #box
+        self.update_x = 0
+        #woodstep
         self.old_pos = self.rect.y
-
+        #mushroom
+        self.collide_wood = False
+        #strikes
+        self.velocity_y = 0
+        self.update_y = 0
+        self.strike_fall = False
+        self.vision = pygame.Rect(0, 0, TILE_SIZE*4, TILE_SIZE*6)
+        #box
         self.collide_button = False
 
     def update(self):
         # scroll
         self.rect.x += screen_scroll # scroll the world map
+        self.vision.x += screen_scroll
 
         # funtionality     
         self.update_animation()
@@ -863,7 +947,7 @@ class Item_Water(pygame.sprite.Sprite):
         if self.type == "Mushroom":
             self.mushroom()
         if self.type == 'Strikes':
-            pass
+            self.strikes()
         if self.type == 'Wood':
             self.woodstep()
 
@@ -885,60 +969,77 @@ class Item_Water(pygame.sprite.Sprite):
                 player.sign = True
             elif self.type == 'Bottle':
                 player.bottle = 1
-            elif self.type == 'River' or self.type == 'Wave':
-                pass
-            elif self.type == 'Waterfall':
-                pass
+            elif self.type == 'Strikes':
+                print('hit')
+                player.health -= 1
+            for enemy in enemy_list:
+                if pygame.sprite.collide_rect(self, enemy):
+                    if self.type == 'Strikes':
+                        enemy.health -= 1
+
             # delete the item
-            if self.type != 'Box' and self.type != 'Mushroom' and self.type != "Strike" and self.type != 'Wood':#or self.type != 'River' or self.type != 'Wave' or self.type != 'Waterfall':
+            if self.type == 'Chest' or self.type == 'Coin' or self.type == 'Key':
                 self.kill()
 
     def woodstep(self):
-        update_y = 0
+        #update_y = 0
         if lever.turning:
-            update_y = -1
-            if self.rect.y + update_y <= self.old_pos-(2 * TILE_SIZE):
-                update_y = 0
-        self.rect.y += update_y
+            self.update_y = -1
+            if self.rect.y + self.update_y <= self.old_pos-(2 * TILE_SIZE):
+                self.update_y = 0
+        else:
+            self.update_y = 1
+            if self.rect.y + self.update_y >= self.old_pos:
+                self.update_y = 0
+            #print(lever.turning)
+        self.rect.y += self.update_y
 
-        #collision
+        #collision with player and enemies
         if pygame.sprite.collide_rect(self, player):
             if player.rect.collidepoint(self.rect.midtop):
                 player.rect.y = self.rect.y - player.height
                 player.inair = False
-        if mushroom.rect.collidepoint(self.rect.midtop):
-                print('collide')
-        '''
-        if pygame.sprite.collide_rect(self, mushroom):
-            print('collide')
-            mushroom.rect.y = self.rect.y - mushroom.height
-        '''
-
+            else:
+                if player.rect.collidepoint(self.rect.midleft):
+                    player.rect.x = self.rect.x - player.width
+                if player.rect.collidepoint(self.rect.midright):
+                    player.rect.x = self.rect.x + player.width
+        for enemy in enemy_list:
+            if pygame.sprite.collide_rect(self, enemy):
+                if self.rect.collidepoint(enemy.rect.midbottom):
+                    enemy.rect.y = self.rect.y - enemy.height
+                    enemy.inair = False
+                #else:
+                if enemy.rect.collidepoint(self.rect.midleft):
+                    enemy.rect.x = self.rect.x - enemy.width
+                if enemy.rect.collidepoint(self.rect.midright):
+                    enemy.rect.x = self.rect.x + enemy.width
+            
     def strikes(self):
         self.velocity_y += GRAVITY
-        update_y = 0
-        
-        fall_point_y = self.rect.y + 4* TILE_SIZE # if player is within 4 units away from the strikes, strikes fall
-        if player.rect.y <= fall_point_y:
-            update_y = self.velocity_y
-            if self.velocity_y >= 5:
-                self.velocity_y = 5
-
-        if self.rect.colliderect(player):
-            print('hit')
-            player.health -= 1
-        
+        self.vision.centerx = self.rect.x
+        self.vision.y = self.rect.y
+        #pygame.draw.rect(screen, RED, self.vision) #vision range
+        if self.vision.colliderect(player.rect):
+            print('strike collide')
+            self.strike_fall = True
+            
+        if self.strike_fall:
+            if self.velocity_y >= 3:
+                self.velocity_y = 3
+        else:
+            self.velocity_y = 0
+        self.update_y = self.velocity_y
         # bondaries
         for tile in world.obstacle_list:
-            if tile[1].colliderect(self.rect.x, self.rect.y + update_y, self.width, self.height):
+            if tile[1].colliderect(self.rect.x, self.rect.y + self.update_y, self.width, self.height):
                 if self.velocity_y > 0:
                     self.velocity_y = 0
                     self.rect.y = tile[1].top
                 if self.rect.bottom == tile[1].top:
                     self.kill()
-
         #update y location
-        self.rect.y += update_y  
+        self.rect.y += self.update_y     
 
     def mushroom(self):
         if pygame.sprite.collide_rect(self, player):
@@ -951,59 +1052,84 @@ class Item_Water(pygame.sprite.Sprite):
             if player.rect.collidepoint(self.rect.midtop):
                 player.rect.y = self.rect.y - player.height
                 player.velocity_y = -18
-                
+        # move up and down as the woodstep moves
+        if pygame.sprite.collide_rect(self, woodstep):
+            self.collide_wood = True
+        if self.collide_wood:
+            self.rect.y = woodstep.rect.y - self.height
+       
     def box(self):
-        self.direction = player.direction # by passing player's direction, the movement of the box would be more fluent
+        self.direction = player.direction# by passing player's direction, the movement of the box would be more fluent
         self.velocity_y += GRAVITY
         update_x = 0
-        update_y = 0
-        collide_x = False
-        collide_y = False
+        # collision with the strikes
+        if pygame.sprite.collide_rect(self, strike):
+                self.rect.y = strike.rect.y - self.height
+                self.velocity_y = 0
+        # let the box fall
+        self.update_y += self.velocity_y 
+        #check collision with the player
         if pygame.sprite.collide_rect(self, player):
-            if player.rect.collidepoint(self.rect.midleft) or player.rect.collidepoint(self.rect.midright):
-                collide_x = True
-                collide_y = False
-            else:
-                collide_x = False
-
+            # y direction
             if player.rect.collidepoint(self.rect.midtop):
-                collide_y = True
-                collide_x = False
-            else:
-                collide_y = False
+                player.rect.y = self.rect.y - player.height
+                player.velocity_y = 0
+                player.inair = False
+            # x direction
+            #else:
                 
-            if collide_x and collide_y == False:
+            elif player.rect.collidepoint(self.rect.midleft) or player.rect.collidepoint(self.rect.topleft):
+                player.rect.x = self.rect.x - self.width
+                if player_move_right:
+                    update_x = player.speed
+                    #self.rect.x += player.speed
+            elif player.rect.collidepoint(self.rect.midright) or player.rect.collidepoint(self.rect.topright):
+                player.rect.x = self.rect.x + self.width
+                if player_move_left:
+                    update_x = -player.speed
+                    #self.rect.x -=  player.speed
+                
+                #if player.rect.collidepoint(self.rect.midleft): #or player.rect.collidepoint(self.rect.midright):
+        '''
+            if collide_x == True and collide_y == False:
                 self.rect.y = self.rect.y
                 update_x = self.direction * player.speed
                 player.rect.x = self.rect.x - int(player.width * player.direction)
-
-            if collide_y and collide_x == False: #fix this by using player.inair?
+        '''
+        '''
+            if collide_y == True and collide_x == False: #fix this by using player.inair?
                 self.rect.x = self.rect.x
                 player.rect.x = player.rect.x
                 player.velocity_y = 0
                 player.inair = False
                 player.rect.y = self.rect.y - player.height
 
-        update_y += self.velocity_y
+        self.update_y += self.velocity_y
+        '''
+        
         # check bondaries
         for tile in world.obstacle_list:
             if tile[1].colliderect(self.rect.x + update_x, self.rect.y, self.width, self.height): # left/right
+                #self.rect.x = self.rect.x
                 update_x = 0
-            if tile[1].colliderect(self.rect.x, self.rect.y + update_y, self.width, self.height):
+                self.rect.y = self.rect.y
+            elif tile[1].colliderect(self.rect.x, self.rect.y + self.update_y, self.width, self.height):
+                #self.rect.x = self.rect.x
+                #player.rect.x = self.rect.x - self.width
                 if self.velocity_y > 0:
                     self.velocity_y = 0
-                    update_y = tile[1].top - self.rect.bottom
+                    self.update_y = tile[1].top - self.rect.bottom
         
-        # let player push the box
+
         self.rect.x += update_x
-        self.rect.y += update_y
+        self.rect.y += self.update_y
 
     def update_animation(self):
             animation_cooldown = 150 # speed of frame changes, the higher # the slower
 
             # update image depending on current frame
             
-            self.image = items_water[self.type][self.ani_index]
+            self.image = items_dict[self.type][self.ani_index]
             
             # check if enough time has passed since the last update
             #               new time - last updated time > specific cooldown period
@@ -1012,39 +1138,35 @@ class Item_Water(pygame.sprite.Sprite):
                 self.ani_index = self.ani_index + 1 # pop to the next img
 
             # aviod animation list run out of the range (back to the start)
-            if self.ani_index >= len(items_water[self.type]):
+            if self.ani_index >= len(items_dict[self.type]):
                 self.ani_index = 0
+            
+    def draw(self):
+        screen.blit(self.image, (self.rect.x, self.rect.y))
     
-class HealthBar():
-    def __init__(self, x, y, health, max_health):
-        self.x = x
-        self.y = y
-        self.health = health
-        self.max_health = max_health
-    
-    def draw(self, health):
-        # update with new health
-        #self.health = health
-        ratio =  self.health / self.max_health
-        #print(ratio)
-        pygame.draw.rect(screen, BLACK, (self.x - 2, self.y - 2, 49, 15)) #frame of the health bar
-        pygame.draw.rect(screen, BLUE,(self.x, self.y, 45 * ratio, 10)) # damage
-        pygame.draw.rect(screen, RED, (self.x, self.y, 45, 10)) # actual health
-        
+# Create button
+start_btn = button.Button(screen_width//2 - 200, screen_height//3 + 250, start_img, 4)
+exit_btn = button.Button(screen_width//2 + 50, screen_height//3 + 250, quit_img, 4)
+again_btn = button.Button(screen_width//2 - again_img.get_width()*2, screen_height//2 +120, again_img, 4)
+#gameover_sign = button.Button(screen_width//2, screen_height//2, gameover_img, 6)
+
 
 # ------ SPRITES ------ #
-#--- sprite list
+#--- sprite group
 all_sprite_list = pygame.sprite.Group()
 bullet_list = pygame.sprite.Group()
 enemy_list = pygame.sprite.Group()
 item_list = pygame.sprite.Group()
 decoration_list = pygame.sprite.Group()
-#water_list = pygame.sprite.Group()
+water_list = pygame.sprite.Group()
 exit_list = pygame.sprite.Group()
 door_list = pygame.sprite.Group()
-trigger_list = pygame.sprite.Group()
+button_list = pygame.sprite.Group()
+lever_list = pygame.sprite.Group()
 strike_list = pygame.sprite.Group()
-
+mushroom_list = pygame.sprite.Group()
+woodstep_list = pygame.sprite.Group()
+box_list = pygame.sprite.Group()
 
 ### World background
 #create empty tile list
@@ -1060,87 +1182,144 @@ with open(f'level{level}_data.csv', newline='') as csvfile:
             world_data[x][y] = int(tile)
 
 world = World()
-player, button, lever, box, exit, mushroom = world.process_data(world_data)
+player, button, lever, box, exit, woodstep, strike = world.process_data(world_data)
 # ---- MAIN PROGRAM LOOP ---- #
 run = True
 while run:
 
     
     clock.tick(60)
-    #if start_game == False:
-        # draw menu
-    screen.fill(WHITE)
-    #else: #exclude the event part
+    if start_game == False:
+        # draw bg
+        screen.fill(WHITE)
+        width = bg_1.get_width()
+        for x in range(5):
+            screen.blit(bg_1, ((x * width), 0))
+            screen.blit(bg_2, ((x * width), screen_height - bg_2.get_height()))
+            screen.blit(bg_3, ((x * width), screen_height - bg_3.get_height()+100))
+        # add buttons
+        if start_btn.draw(screen):
+            start_game = True
+        if exit_btn.draw(screen):
+            run = False
+    else:
             
-        #all_sprite_list.draw(screen)
+        screen.fill(WHITE)
+        #else: #exclude the event part
+                
+            #all_sprite_list.draw(screen)
+            
+        # draw bg
+        draw_bg()
+        #draw and update groups items
         
-    # draw bg
-    draw_bg()
-    #draw and update groups items
-    item_list.draw(screen)
-    item_list.update()
-    # update background
-    world.draw()
+        # update background
+        world.draw()
 
-    # show variables
-    draw_text('Health: ', font, RED, 10, 35)
-    for x in range(player.health):
-        screen.blit(heart_img, (70 + (x*20), 40))
+        # show variables
+        draw_text('Health: ', font, RED, 10, 35)
+        for x in range(player.health):
+            screen.blit(heart_img, (70 + (x*20), 40))
 
-    draw_text(f'Coins: {player.score}', font, RED, 10, 55)
+        draw_text(f'Coins: {player.score}', font, RED, 10, 55)
 
-    door_list.draw(screen)
-    door_list.update()
-    exit_list.draw(screen)
-    exit_list.update()
-    level = exit.update_level()
+        draw_text('Key: ', font, RED, 10, 75)
+        for x in range(player.key):
+            screen.blit(key_img[0], (70, 80))
 
-    player.draw()
-    player.update()
+        door_list.draw(screen)
+        door_list.update()
+        exit_list.draw(screen)
+        exit_list.update()
+        #level = exit.update_level()
 
-    for enemy in enemy_list:
-        enemy.ai()
-        enemy.draw()
-        enemy.update()
-
-    strike_list.draw(screen)
-    for item in strike_list:
-        item.strikes()
-        #item.draw()
-    
-    bullet_list.draw(screen)
-    bullet_list.update()
-    decoration_list.draw(screen)
-    decoration_list.update()
-    #water_list.draw(screen)
-    #water_list.update()
-    
-
-    trigger_list.draw(screen)
-    trigger_list.update()
-    #button_press = box.pass_boolean()
-
-    
-    if player.alive:
-        # show player's animation in different actions
-        #print(player.action)
-        if shoot:
-            player.shoot_bullet()
-            if player.shoot_cooldown > 0:
-                player.update_action(3) #shoot
+        player.draw()
+        player.update()
         
-        elif player.inair:
-            player.update_action(2) # Jump
-        elif player_move_left or player_move_right:
-            player.update_action(1) # Run
-            #player.update_action(3)
+        for enemy in enemy_list:
+            enemy.ai()
+            enemy.draw()
+            enemy.update()
+        for water in water_list:
+            water.update()
+            water.draw()
+
+        item_list.draw(screen)
+        item_list.update()
+
+        for wood in woodstep_list:
+            wood.woodstep()
+            wood.update()
+            wood.draw()
+
+        for mushroom in mushroom_list:
+            mushroom.mushroom()
+            mushroom.update()
+            mushroom.draw()
+
+        for item in strike_list:
+            item.update()
+            item.strikes()
+            item.draw()
+
+        for box in box_list:
+            box.update()
+            box.box()
+            box.draw()
+        
+        for button in button_list:
+            button.press()
+            button.update()
+            button.draw()
+        
+        for lever in lever_list:
+            #lever.turn()
+            lever.draw()
+            lever.update()
+            
+
+        bullet_list.draw(screen)
+        bullet_list.update()
+        decoration_list.draw(screen)
+        decoration_list.update()
+        
+        if player.alive:
+            # show player's animation in different actions
+            #print(player.action)
+            if shoot:
+                player.shoot_bullet()
+                if player.shoot_cooldown > 0:
+                    player.update_action(3) #shoot
+            
+            elif player.inair:
+                player.update_action(2) # Jump
+            elif player_move_left or player_move_right:
+                player.update_action(1) # Run
+                #player.update_action(3)
+            else:
+                player.update_action(0) # Idle
+            
+            screen_scroll = player.Movement(player_move_left, player_move_right)
+            #print(screen_scroll)
+            bg_scroll -= screen_scroll
+            #print(bg_scroll)
         else:
-            player.update_action(0) # Idle
-        
-        screen_scroll = player.Movement(player_move_left, player_move_right)
-        #print(screen_scroll)
-        bg_scroll -= screen_scroll
-        #print(bg_scroll)
+            screen_scroll = 0
+            #draw_bg()
+            screen.blit(gameover_img, (screen_width//2 - gameover_img.get_width()//2, screen_height//2 - gameover_img.get_height()//2))
+            if again_btn.draw(screen):
+                bg_scroll = 0
+                world_data = reset_level() #create blank world
+                #load in level data and create world
+                with open(f'level{level}_data.csv', newline='') as csvfile:
+                    reader = csv.reader(csvfile, delimiter=',')
+                    for x, row in enumerate(reader):
+                        for y, tile in enumerate(row):
+                            world_data[x][y] = int(tile)
+
+                world = World()
+                player, button, lever, box, exit, woodstep, strike = world.process_data(world_data)
+
 
         
     for event in pygame.event.get():
@@ -1156,10 +1335,11 @@ while run:
             if event.key == pygame.K_SPACE:
                 shoot = True
             if event.key == K_w and player.alive:
-                player.jump = True
-            if pygame.sprite.collide_rect(lever, player):
-                if event.key == pygame.K_t:
-                    lever.turn()
+                player.jump = True     
+            #if pygame.sprite.collide_rect(lever, player):
+            if event.key == pygame.K_t:
+                #print('work')
+                lever.turn()
 
         # Button release
         if event.type == pygame.KEYUP:
