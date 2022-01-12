@@ -1,14 +1,8 @@
 """
-Name: 
+Name: Twilight Vania
 author: Fiona Zhong
 date created: 2021-10-13
 """
-''' GOALS BY STEPS
-1. create player and let it be able to move with buttons
-2. let the player be able to shoot 
-3. create enemy(computer) class that can shoot automatically (maybe some AI thing?)
-4. 
-'''
 import pygame, random, os, csv, time, button
 from pygame import mixer
 from pygame.constants import APPACTIVE, DROPCOMPLETE, K_SPACE, KEYDOWN, KEYUP, K_w
