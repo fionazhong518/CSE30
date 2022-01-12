@@ -475,8 +475,6 @@ class Trigger(pygame.sprite.Sprite):
             if self.press_down:
                 self.cool_down -= 1
                 if self.cool_down <= 0:
-                    print('up')
-                    
                     self.press_down = False
         
 
@@ -767,14 +765,15 @@ class Figure(pygame.sprite.Sprite):
         if self.rect.bottom > screen_height:
             self.health = 0
             
-        # check if off screen
-        if self.char_type == 'player':
-            if self.rect.left + dir_x < 0 or self.rect.right + dir_x > screen_width:
-                dir_x = 0
         # chenck for collision with exit
         level_complete = False
         if pygame.sprite.spritecollide(self, exit_list, False) and self.key:
             level_complete = True
+
+        # check if off screen
+        if self.char_type == 'player':
+            if self.rect.left + dir_x < 0 or self.rect.right + dir_x > screen_width:
+                dir_x = 0
 
         # update player position
         self.rect.x = self.rect.x + dir_x
@@ -791,7 +790,7 @@ class Figure(pygame.sprite.Sprite):
                 bg_scroll == 0
             if screen_scroll <= 0:
                 screen_scroll == 0
-            #print(self.rect.x, self.rect.y)
+        #print(screen_scroll)
             
 
         return screen_scroll, level_complete # need to return back to the main game
@@ -1003,7 +1002,7 @@ class Items(pygame.sprite.Sprite):
         # if collide
         if pygame.sprite.collide_rect(self, player):
             # check what kind of item the player meet
-            if self.type == 'Red flask':
+            if self.type == 'Red_flask':
                 player.health += 1
                 if player.health == player.max_health:
                     player.health = player.max_health
@@ -1026,7 +1025,7 @@ class Items(pygame.sprite.Sprite):
                         enemy.health -= 1
 
             # delete the item
-            if self.type == 'Chest' or self.type == 'Coin' or self.type == 'Key' or self.type == 'Red flask':
+            if self.type == 'Chest' or self.type == 'Coin' or self.type == 'Key' or self.type == 'Red_flask':
                 self.kill()
 
     def woodstep(self):
@@ -1069,7 +1068,7 @@ class Items(pygame.sprite.Sprite):
         self.vision.y = self.rect.y
         #pygame.draw.rect(screen, RED, self.vision) #vision range
         if self.vision.colliderect(player.rect):
-            print('strike collide')
+            #print('strike collide')
             self.strike_fall = True
             
         if self.strike_fall:
