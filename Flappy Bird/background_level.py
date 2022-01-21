@@ -35,7 +35,7 @@ font = pygame.font.SysFont('Futura', 15)
 ROWS = 20
 MAX_COLUMNS = 640
 TILE_SIZE = 32#SCREEN_HEIGHT // ROWS
-TILE_TYPES = 27
+TILE_TYPES = 28
 
 
 scroll_left = False
@@ -63,11 +63,12 @@ for x in range(TILE_TYPES):
     img = pygame.image.load(f'tileset/{x}.png').convert_alpha()
     img = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE))
     img_list.append(img)
+'''
 # candle img
 img = pygame.image.load('tileset/27.png').convert_alpha()
 img = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE*2))
 img_list.append(img)
-
+'''
 save_img = pygame.image.load('save_btn.png').convert_alpha()
 load_img = pygame.image.load('load_btn.png').convert_alpha()
 
