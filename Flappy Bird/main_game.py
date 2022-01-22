@@ -528,7 +528,7 @@ class Bullet(pygame.sprite.Sprite):
         for enemy in enemy_list:
             if pygame.sprite.spritecollide(enemy, bullet_list, False):
                 if enemy.alive:
-                    enemy.live -= 4
+                    enemy.live -= 5
                     hit_fx.play()
                     self.kill()
                     print(enemy.live)
