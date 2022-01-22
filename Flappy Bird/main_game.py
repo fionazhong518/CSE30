@@ -1,10 +1,10 @@
 """
-Name: Flappy Bird(maybe?)
+Name: Igloo Shuttle
 author: Fiona Zhong
 date created: 2022-01-09
 """
 
-import pygame, os, csv, button
+import pygame, os, csv, button,random
 from pygame.locals import *
 from pygame import mixer
 
@@ -71,7 +71,7 @@ lose_img = pygame.image.load('lose_text.png').convert_alpha()
 lose_img = pygame.transform.scale(lose_img, (lose_img.get_width()//3*2, lose_img.get_height()//3*2))
 
 # background
-bg_colour = (52, 199, 255)
+bg_colour = (127, 189, 232)
 bg_img = pygame.image.load('background/bg.png').convert_alpha()
 bg_img = pygame.transform.scale(bg_img, (bg_img.get_width(), bg_img.get_height()))
 cloud1_img = pygame.image.load('background/cloud1.png')
@@ -124,7 +124,12 @@ item_dict = {
 # bullet
 bullet_img = pygame.image.load('bullet.png')
 bullet_img = pygame.transform.scale(bullet_img, (TILE_SIZE//2, TILE_SIZE//2))
-
+# create snow
+snow_list = []
+for i in range(300):
+    x = random.randrange(0, SCREEN_WIDTH)
+    y = random.randrange(-100, 0)
+    snow_list.append([x, y])
 # ----------- draw text and bg ----------- #
 def draw_bg():
     screen.fill(bg_colour)
@@ -136,6 +141,19 @@ def draw_bg():
 def draw_text(text, font, text_color, x, y):
     img = font.render(text, True, text_color)
     screen.blit(img, (x, y))
+
+def draw_snow():
+    # draw snow
+    for i in range(len(snow_list)):
+        pygame.draw.circle(screen, WHITE, snow_list[i], 2)
+        snow_list[i][1] += 1 # move y down
+        # check off screen
+        if snow_list[i][1] > SCREEN_HEIGHT//3:
+            # recreate random snow flakes
+            x = random.randrange(0, SCREEN_WIDTH)
+            y = random.randrange(-100, -1)
+            snow_list[i][0] = x
+            snow_list[i][1] = y
 
 def reset_game():
     decoration_list.empty()
@@ -275,8 +293,8 @@ class Figure(pygame.sprite.Sprite):
 
         # lives and score
         self.alive = True
-        self.live = 1
-        self.max_live = 10
+        self.live = 15
+        self.max_live = 15
         self.score = 0
 
         # variables for enemies only
@@ -806,6 +824,7 @@ while run:
         scroll_speed = 0
         if death_fade.fade():
             screen.blit(lose_img, (SCREEN_WIDTH//2 - lose_img.get_width()//2, SCREEN_HEIGHT//3-50))
+            draw_text(f'Your Coins:{player.score}', font, bg_colour, SCREEN_WIDTH//2-50, SCREEN_HEIGHT-200)
             if restart_btn.draw(screen):
                 death_fade.fade_counter = 0
                 start_intro = True
@@ -826,9 +845,13 @@ while run:
                 run = False
     # win
     if level_complete and game_over:
-        if win_fade.fade():   
+        if win_fade.fade():
+            screen.fill(BLACK)
+            draw_snow()   
             # print text
             screen.blit(win_img, (SCREEN_WIDTH//2 - win_img.get_width()//2, SCREEN_HEIGHT//3))
+            draw_text(f'Your Coins:{player.score}', font, bg_colour, SCREEN_WIDTH//2-50, SCREEN_HEIGHT-200)
+            
             if again_btn.draw(screen):
                 win_fade.fade_counter = 0
                 start_intro = True
@@ -847,7 +870,7 @@ while run:
                 player, strike = world.process_data(world_data)
             if quit_btn.draw(screen):
                 run = False
-    print(player.alive)
+    #print(player.alive)
     '''
     #print(scroll_speed)
     # check for gameover and reset
