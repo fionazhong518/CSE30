@@ -93,7 +93,7 @@ gameover_img = pygame.image.load('gameover_sign.png').convert_alpha()
 gameover_img = pygame.transform.scale(gameover_img, (gameover_img.get_width()*10, gameover_img.get_height()*10))
 # title
 title_img = pygame.image.load('title.png').convert_alpha()
-title_img = pygame.transform.scale(title_img, (title_img.get_width()*8, title_img.get_height()*8))
+title_img = pygame.transform.scale(title_img, (title_img.get_width()//3*2, title_img.get_height()//3*2))
 win_img = pygame.image.load('wintext.png').convert_alpha()
 win_img = pygame.transform.scale(win_img, (win_img.get_width()//3*2, win_img.get_height()//3*2))
 
@@ -1277,7 +1277,7 @@ while run:
     world.draw()
         
     if start_game == False:
-        screen.blit(title_img, (screen_width//2 - title_img.get_width()//2, screen_height//3 - 50))
+        screen.blit(title_img, (screen_width//2 - title_img.get_width()//2, screen_height//3 - 150))
         # add buttons
         if start_btn.draw(screen):
             click_sound.play()
