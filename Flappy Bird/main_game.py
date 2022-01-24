@@ -731,7 +731,7 @@ run = True
 while run:
 
     clock.tick(20)
-    screen.fill(bg_colour)
+    screen.fill(BLACK)
 
     if start_game == False:
         screen.blit(title_img, (SCREEN_WIDTH//2 - title_img.get_width()//2, SCREEN_HEIGHT//3 - 50))
